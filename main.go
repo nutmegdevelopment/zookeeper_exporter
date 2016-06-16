@@ -1,4 +1,4 @@
-package main
+package main // import "github.com/ericgerling/zookeeper_exporter"
 
 import (
 	"bufio"

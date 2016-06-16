@@ -1,4 +1,7 @@
 .build
 zookeeper_exporter
+zookeeper-exporter
 *.tar.gz
 *-stamp
+Godeps
+vendor
