@@ -6,7 +6,7 @@ dependencies:
   override:
     - go get github.com/prometheus/client_golang/prometheus
     - go get github.com/prometheus/log 
-    - go build --ldflags '-extldflags "-static"' -o zookeeper-exporter
+    - export CGO_ENABLED=0; go build --ldflags '-extldflags "-static"' -o zookeeper-exporter
     - docker build -t ericgerling/zookeeper-exporter .
 
 deployment:
