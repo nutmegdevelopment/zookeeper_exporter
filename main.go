@@ -26,9 +26,10 @@ const concurrentFetch = 100
 
 // Commandline flags.
 var (
-	useExhibitor = flag.Bool("exporter.use_exhibitor", false, "Use Exhibitor to discover ZooKeeper servers")
-	addr         = flag.String("web.listen-address", ":9114", "Address to listen on for web interface and telemetry.")
-	metricPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
+	useExhibitor    = flag.Bool("exporter.use_exhibitor", false, "Use Exhibitor to discover ZooKeeper servers")
+	exhibitorDomain = flag.String("exporter.exhibitor_domain", "", "Domain to append to returned hosts (where search domain isn't valid).")
+	addr            = flag.String("web.listen-address", ":9114", "Address to listen on for web interface and telemetry.")
+	metricPath      = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 )
 
 var (
@@ -49,16 +50,18 @@ var httpClient = http.Client{
 
 type exporter struct {
 	sync.Mutex
-	addrs        []string
-	useExhibitor bool
-	errors       prometheus.Counter
-	duration     prometheus.Gauge
+	addrs           []string
+	exhibitorDomain string
+	useExhibitor    bool
+	errors          prometheus.Counter
+	duration        prometheus.Gauge
 }
 
 func newZooKeeperExporter(addrs []string, useExhibitor bool) *exporter {
 	e := &exporter{
-		addrs:        addrs,
-		useExhibitor: useExhibitor,
+		addrs:           addrs,
+		exhibitorDomain: *exhibitorDomain,
+		useExhibitor:    useExhibitor,
 		errors: prometheus.NewCounter(
 			prometheus.CounterOpts{
 				Namespace: "zookeeper_exporter",
@@ -137,7 +140,7 @@ func (e *exporter) scrape(ch chan<- prometheus.Metric) {
 		log.Debugf("Got serverlist from Exhibitor: %s", serverList)
 
 		for _, host := range serverList.Servers {
-			servers = append(servers, fmt.Sprintf("%s:%d", host, serverList.Port))
+			servers = append(servers, fmt.Sprintf("%s%s:%d", host, *exhibitorDomain, serverList.Port))
 		}
 	} else {
 		servers = e.addrs
