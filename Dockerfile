@@ -1,3 +1,3 @@
 FROM scratch
-COPY zookeeper-exporter /
-ENTRYPOINT ["/zookeeper-exporter"]
+COPY zookeeper_exporter /
+ENTRYPOINT ["/zookeeper_exporter"]
