@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -140,7 +141,14 @@ func (e *exporter) scrape(ch chan<- prometheus.Metric) {
 		log.Debugf("Got serverlist from Exhibitor: %s", serverList)
 
 		for _, host := range serverList.Servers {
-			servers = append(servers, fmt.Sprintf("%s%s:%d", host, *exhibitorDomain, serverList.Port))
+			// Does this host already have the required exhibitorDomain?
+			// If so, then do not try and re-apply it.
+			// Useful where host upgrades may change the value of Hostname to include the hosts domain (AWS).
+			if strings.HasSuffix(host, *exhibitorDomain) {
+				servers = append(servers, fmt.Sprintf("%s:%d", host, serverList.Port))
+			} else {
+				servers = append(servers, fmt.Sprintf("%s%s:%d", host, *exhibitorDomain, serverList.Port))
+			}
 		}
 	} else {
 		servers = e.addrs
